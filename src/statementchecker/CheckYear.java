@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 /** Run over a year's transactions dumped (from bank account) and 
  * build up a month-by-month breakdown/profile.
@@ -47,10 +50,94 @@ public class CheckYear {
 			System.out.println("Read "+s.getTransactions().size()+" transactions:");
 			//for (Transaction t: s.getTransactions()) 
 			//	System.out.println(t.toString());
-			System.out.println("Output by type to bytype.csv");
-			PrintWriter bytype = new PrintWriter(new FileWriter("bytype.csv"));
-			bytype.println("month,year,");
-			bytype.close();
+			{
+				System.out.println("Output by type to bytype.csv");
+				PrintWriter bytype = new PrintWriter(new FileWriter("bytype.csv"));
+				bytype.print("month,year");
+				TreeSet<String> types = s.getTypes();
+				for (String type : types)
+					bytype.print(","+type+"in,"+type+"out");
+				bytype.println();
+				Set<Integer> years = s.getYears();
+				int grandtotals[] = new int[types.size()*2];
+				for (int year : years) {
+					for (int month=1; month<=12; month++) {
+						int totals[] = new int[types.size()*2];
+						for (Transaction t: s.getTransactions())
+							if (t.year==year && t.month==month) {
+								int ix = 0;
+								for (Iterator<String> ti = types.iterator(); ti.hasNext(); ix++)
+									if (ti.next().equals(t.type))
+										break;
+								if (t.inPence!=null)
+									totals[ix*2] += t.inPence;
+								if (t.outPence!=null)
+									totals[ix*2+1] += t.outPence;							
+							}
+						bytype.print(month+","+year);
+						for (int i=0; i<totals.length; i++) {
+							bytype.print(","+totals[i]);
+							grandtotals[i] += totals[i];
+						}
+						
+						bytype.println();
+					}
+				}
+				bytype.print("total,");
+				for (int i=0; i<grandtotals.length; i++) {
+					bytype.print(","+grandtotals[i]);
+				}
+				bytype.println();
+				bytype.close();
+			}
+			{
+				System.out.println("Output by classification to byclass.csv");
+				PrintWriter byclass = new PrintWriter(new FileWriter("byclass.csv"));
+				byclass.print("month,year");
+				TreeSet<String> classes = s.getClassifications();
+				for (String clazz: classes)
+					byclass.print(","+clazz);
+				byclass.println();
+				Set<Integer> years = s.getYears();
+				int grandtotals[] = new int[classes.size()];
+				for (int year : years) {
+					for (int month=1; month<=12; month++) {
+						int totals[] = new int[classes.size()];
+						for (Transaction t: s.getTransactions())
+							if (t.year==year && t.month==month) {
+								int ix = 0;
+								for (Iterator<String> ti = classes.iterator(); ti.hasNext(); ix++)
+									if (ti.next().equals(t.classify()))
+										break;
+								if (t.inPence!=null)
+									totals[ix] += t.inPence;
+								if (t.outPence!=null)
+									totals[ix] -= t.outPence;							
+							}
+						byclass.print(month+","+year);
+						for (int i=0; i<totals.length; i++) {
+							byclass.print(","+totals[i]*0.01);
+							grandtotals[i] += totals[i];
+						}
+						byclass.println();
+					}
+				}
+				byclass.print("total,");
+				for (int i=0; i<grandtotals.length; i++) {
+					byclass.print(","+grandtotals[i]*0.01);
+				}
+				byclass.println();
+				byclass.close();
+			}
+			{
+				System.out.println("Output with classification to withclass.csv");
+				PrintWriter byclass = new PrintWriter(new FileWriter("withclass.csv"));
+				byclass.println("month,year,day,class,type,description,in,out");
+				for (Transaction t: s.getTransactions()) {
+					byclass.println(t.month+","+t.year+","+t.day+","+t.classify()+","+t.type+","+t.description+","+(t.inPence!=null ? t.inPence*0.01 : "")+","+(t.outPence!=null ? t.outPence*0.01 : ""));
+				}
+				byclass.close();
+			}
 		}
 		catch (Exception e) {
 			System.err.println("Error: "+e);

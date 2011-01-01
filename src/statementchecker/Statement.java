@@ -23,8 +23,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /** A whole statement.
  * 
@@ -136,5 +139,29 @@ public class Statement {
 				throw new NumberFormatException("Not a digit after . in "+string);
 		}
 		return pence;
+	}
+	/** get all types */
+	public TreeSet<String> getTypes() {
+		TreeSet<String> types = new TreeSet<String>();
+		for (Transaction t: transactions) {
+			types.add(t.type);
+		}
+		return types;
+	}
+	/** get all types */
+	public TreeSet<String> getClassifications() {
+		TreeSet<String> types = new TreeSet<String>();
+		for (Transaction t: transactions) {
+			types.add(t.classify());
+		}
+		return types;
+	}
+	/** get all years */
+	public TreeSet<Integer> getYears() {
+		TreeSet<Integer> years = new TreeSet<Integer>();
+		for (Transaction t: transactions) {
+			years.add(t.year);
+		}
+		return years;
 	}
 }
