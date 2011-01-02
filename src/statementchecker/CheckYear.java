@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,12 +42,15 @@ public class CheckYear {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		if (args.length!=1) {
-			System.err.println("Usage: <statement.csv>");
+		if (args.length!=2) {
+			System.err.println("Usage: <statement.csv> <cheques.csv>");
+			System.err.println("Cheques: cheque,date,amount,description,classification");
 			System.exit(-1);
 		}
 		try {
-			Statement s = Statement.readStatement(new File(args[0]));
+			Map<String,Cheque> cheques = Cheque.readFile(new File(args[1]));
+			System.out.println("Read "+cheques.size()+" cheques");
+			Statement s = Statement.readStatement(new File(args[0]), cheques);
 			System.out.println("Read "+s.getTransactions().size()+" transactions:");
 			//for (Transaction t: s.getTransactions()) 
 			//	System.out.println(t.toString());
@@ -93,40 +97,36 @@ public class CheckYear {
 			{
 				System.out.println("Output by classification to byclass.csv");
 				PrintWriter byclass = new PrintWriter(new FileWriter("byclass.csv"));
-				byclass.print("month,year");
-				TreeSet<String> classes = s.getClassifications();
-				for (String clazz: classes)
-					byclass.print(","+clazz);
-				byclass.println();
+				byclass.print("class");
 				Set<Integer> years = s.getYears();
-				int grandtotals[] = new int[classes.size()];
 				for (int year : years) {
 					for (int month=1; month<=12; month++) {
-						int totals[] = new int[classes.size()];
-						for (Transaction t: s.getTransactions())
-							if (t.year==year && t.month==month) {
-								int ix = 0;
-								for (Iterator<String> ti = classes.iterator(); ti.hasNext(); ix++)
-									if (ti.next().equals(t.classify()))
-										break;
-								if (t.inPence!=null)
-									totals[ix] += t.inPence;
-								if (t.outPence!=null)
-									totals[ix] -= t.outPence;							
-							}
-						byclass.print(month+","+year);
-						for (int i=0; i<totals.length; i++) {
-							byclass.print(","+totals[i]*0.01);
-							grandtotals[i] += totals[i];
-						}
-						byclass.println();
+						byclass.print(","+month+"/"+year);
 					}
 				}
-				byclass.print("total,");
-				for (int i=0; i<grandtotals.length; i++) {
-					byclass.print(","+grandtotals[i]*0.01);
+				byclass.println(",total,average");
+				TreeSet<String> classes = s.getClassifications();
+				int ix = 0;
+				for (Iterator<String> ti = classes.iterator(); ti.hasNext(); ix++) {
+					String clazz = ti.next();
+					byclass.print(clazz);
+					int grandtotal = 0;
+					for (int year : years) {
+						for (int month=1; month<=12; month++) {
+							int total = 0;
+							for (Transaction t: s.getTransactions())
+								if (t.year==year && t.month==month && clazz.equals(t.classify())) {
+									if (t.inPence!=null)
+										total += t.inPence;
+									if (t.outPence!=null)
+										total -= t.outPence;							
+							}
+							byclass.print(","+(total*0.01));
+							grandtotal += total;
+						}
+					}
+					byclass.println(","+(grandtotal*0.01)+","+((grandtotal/(12*years.size()))*0.01));
 				}
-				byclass.println();
 				byclass.close();
 			}
 			{

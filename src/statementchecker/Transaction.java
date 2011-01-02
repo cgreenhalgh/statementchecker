@@ -35,6 +35,7 @@ public class Transaction {
 	public Integer inPence;
 	public Integer outPence;
 	public int balancePence;
+	public Cheque cheque;
 	/** cons */
 	public Transaction() {		
 	}
@@ -63,7 +64,7 @@ public class Transaction {
 	public static final String SUPERMARKET = "supermarket";
 	public static final String CLOTHES = "clothes";
 	public static final String MEALS = "meals";
-	public static final String HOLIDAY= "holiday";
+	public static final String HOLIDAYS = "holidays";
 	public static final String HOME = "home";
 	public static final String TREATS = "treats";
 	public static final String PAYPAL = "paypal";
@@ -95,13 +96,13 @@ public class Transaction {
 		"COVENTRY BUILD"
 	};
 	public static final String [] DESCRIPTION_DEB_TRANSPORT = new String[] {
-		"TESCO GARAGE", "PACE ", "ESSO ", "AA MOTOR INS", "ASDA F/STN", "BP", "KEYWORTH GARAGE", "SHELL", "TIBSHELF MWSA",
+		"TESCO GARAGE", "PACE ", "ESSO ", "ASDA F/STN", "BP", "KEYWORTH GARAGE", "SHELL", "TIBSHELF MWSA",
 		"BUNNEYS BIKES", "EVANS CYCLES", "CENTRAL TYRES", "KWIK FIT", "NOTTS CITY TRANSP",
 		"EAST MIDLANDS TRAI", "EC MAINLINE", "THETRAINLINE.COM",
 		"PETROGAS"
 	};
 	public static final String [] DESCRIPTION_DEB_BILLS = new String[] {
-		"NOTTINGHAM ICE CTR", "WWW.DVLA.GOV", "COTGRAVE LEISURE"
+		"NOTTINGHAM ICE CTR", "WWW.DVLA.GOV", "COTGRAVE LEISURE", "AA MOTOR INS"
 	};
 
 	public static final String [] DESCRIPTION_DEB_GIVING = new String[] {
@@ -140,7 +141,7 @@ public class Transaction {
 		"DAVE MANN", "NOTTINGHAM DRUM",
 		"PD REES"
 	};
-	public static final String [] DESCRIPTION_DEB_HOLIDAY = new String[] {
+	public static final String [] DESCRIPTION_DEB_HOLIDAYS = new String[] {
 		"CPAS VENTURES", "BILLING AQUADROME", "DOVER TOWN", "EARLY LEARNING", "HOSEASON ", "HOSPEDIA ",
 		"KINMEL HOTEL", "PETERBOROUGH PASS", "WHITBY INFORMATION", "WWW.POFERRIES.COM"
 	};
@@ -159,6 +160,8 @@ public class Transaction {
 	}
 	/** classify */
 	public String classify() {
+		if (cheque!=null && cheque.classification!=null)
+			return cheque.classification;
 		if (TYPE_BGC.equals(type) && inPence!=null)
 			return INCOME;
 		if (TYPE_SO.equals(type) && descriptionMatches(DESCRIPTION_SO_SAVING))
@@ -194,8 +197,8 @@ public class Transaction {
 			return TREATS;
 		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_PAYPAL))
 			return PAYPAL;
-		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_HOLIDAY))
-			return HOLIDAY;
+		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_HOLIDAYS))
+			return HOLIDAYS;
 		if (TYPE_FPO.equals(type) && descriptionMatches(DESCRIPTION_FPO_CREDITCARD))
 			return CREDITCARD;
 		if (TYPE_FEE.equals(type))

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -61,8 +62,9 @@ public class Statement {
 	public static int BALANCE = 7;
 	public static int COUNT = 8;
 	
-	/** read from CSV file */
-	public static Statement readStatement(File f) throws IOException {
+	/** read from CSV file 
+	 * @param cheques */
+	public static Statement readStatement(File f, Map<String, Cheque> cheques) throws IOException {
 		Statement s = new Statement();
 		List<Transaction> ts = new LinkedList<Transaction>();
 		s.setTransactions(ts);
@@ -114,6 +116,16 @@ public class Statement {
 			catch (Exception e) {
 				System.err.println("Error parsing date in "+f+":"+count+": "+line);
 			}
+			
+			// cheque?
+			if (t.type.equals(Transaction.TYPE_CHQ) || t.type.equals(Transaction.TYPE_PAY)) {
+				t.cheque = cheques.get(t.description.trim());
+				if (t.cheque==null)
+					System.err.println("Did not find cheque "+t.description);
+				else if (t.outPence!=null && !t.outPence.equals(t.cheque.amountPence)) 
+					System.err.println("Cheque "+t.description+" amount does not match "+t.outPence+" vs "+t.cheque.amountPence);
+			}
+			
 			ts.add(t);
 		}
 		br.close();
@@ -123,20 +135,22 @@ public class Statement {
 	 * @param string
 	 * @return
 	 */
-	private static Integer toPence(String string) throws NumberFormatException {
+	public static Integer toPence(String string) throws NumberFormatException {
 		if (string.length()==0)
 			return null;
 		int ix = string.indexOf(".");
 		int pence = 100*Integer.parseInt(ix<0 ? string : string.substring(0, ix));
-		int factor = 10;
-		while ((++ix)<string.length()) {
-			char c= string.charAt(ix);
-			if (Character.isDigit(c)) {
-				pence += factor*((int)(c-'0'));
-				factor /= 10;
+		if (ix>=0) {
+			int factor = 10;
+			while ((++ix)<string.length()) {
+				char c= string.charAt(ix);
+				if (Character.isDigit(c)) {
+					pence += factor*((int)(c-'0'));
+					factor /= 10;
+				}
+				else
+					throw new NumberFormatException("Not a digit after . in "+string);
 			}
-			else
-				throw new NumberFormatException("Not a digit after . in "+string);
 		}
 		return pence;
 	}
