@@ -23,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +63,8 @@ public class Statement {
 	public static int OUT = 6;
 	public static int BALANCE = 7;
 	public static int COUNT = 8;
+	
+	static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 	
 	/** read from CSV file 
 	 * @param cheques */
@@ -107,11 +111,10 @@ public class Statement {
 				continue;
 			}
 			try {
-				int ix1 = toks[DATE].indexOf('/');
-				int ix2 = toks[DATE].indexOf('/', ix1+1);
-				t.day = Integer.parseInt(toks[DATE].substring(0,ix1));
-				t.month = Integer.parseInt(toks[DATE].substring(ix1+1,ix2));
-				t.year = Integer.parseInt(toks[DATE].substring(ix2+1));
+				t.date = dateFormat.parse(toks[DATE]);
+				t.day = t.date.getDate();
+				t.month = t.date.getMonth()+1;
+				t.year = t.date.getYear()+1900;
 			}
 			catch (Exception e) {
 				System.err.println("Error parsing date in "+f+":"+count+": "+line);
@@ -178,4 +181,5 @@ public class Statement {
 		}
 		return years;
 	}
+	
 }

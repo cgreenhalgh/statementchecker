@@ -23,36 +23,29 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/** Extra info about a cheque.
- * CSV file, headings: cheque,date,amount,description,class
+/** Extra info about a budget.
+ * CSV file, headings: class,amount [annual total]
  * 
  * @author cmg
  *
  */
-public class Cheque {
-	private static final int COUNT = 5;
-	private static final int CHEQUE = 0;
-	private static final int DATE = 1;
-	private static final int AMOUNT = 2;
-	private static final int DESCRIPTION = 3;
-	private static final int CLASSIFICATION = 4;
+public class Budget {
+	private static final int COUNT = 2;
+	private static final int CLASSIFICATION = 0;
+	private static final int AMOUNT = 1;
 
-	public String cheque;
-	public Date date;
-	public Integer amountPence;
-	public String description;
 	public String classification;
+	public Integer amountPence;
 	/** cns */
-	public Cheque() {		
+	public Budget() {		
 	}
-	public static Map<String,Cheque> readFile(File f) throws IOException {
-		Map<String,Cheque> cs = new HashMap<String,Cheque>();
+	public static Map<String,Budget> readFile(File f) throws IOException {
+		Map<String,Budget> bs = new HashMap<String,Budget>();
 		BufferedReader br = new BufferedReader(new FileReader(f));
 		int count = 0;
 		while (true) {
@@ -61,34 +54,23 @@ public class Cheque {
 			if (line==null)
 				break;
 			String toks[] = line.split(",");
-			//Date	Type	Sort Code	Account Number	Description	In	Out	Balance
 			if (toks.length!=COUNT) {
 				System.err.println("Ignore "+f+":"+count+": "+line);
 				continue;
 			}
-			if (toks[CHEQUE].equals("cheque"))
+			if (toks[CLASSIFICATION].toLowerCase().equals("class"))
 				continue;
-			Cheque c = new Cheque();
-			//01/02/2010	FEE	309932	308854	PLATINUM ACCOUNT		12	4180.03
-			c.cheque = toks[CHEQUE];
-			c.description =toks[DESCRIPTION];
-			c.classification= toks[CLASSIFICATION];
+			Budget a = new Budget();
+			a.classification= toks[CLASSIFICATION];
 			try {
-				if (toks[DATE]!=null && toks[DATE].length()>0)
-					c.date = Statement.dateFormat.parse(toks[DATE]);
-			}
-			catch (Exception e) {
-				System.err.println("Error parsing date in "+f+":"+count+": "+line);
-			}
-			try {
-				c.amountPence = Statement.toPence(toks[AMOUNT]);
+				a.amountPence = Statement.toPence(toks[AMOUNT]);
 			} catch (NumberFormatException nfe) {
 				System.err.println("Error parsing pence in "+f+":"+count+": "+line+" ("+nfe+")");
 				continue;
 			}
-			cs.put(c.cheque, c);
+			bs.put(a.classification, a);
 		}
 		br.close();
-		return cs;
+		return bs;
 	}
 }

@@ -19,6 +19,9 @@
  */
 package statementchecker;
 
+import java.util.Comparator;
+import java.util.Date;
+
 /** A single transaction.
  * 
  * @author cmg
@@ -28,6 +31,7 @@ public class Transaction {
 	public int day;
 	public int month;
 	public int year;
+	public Date date;
 	public String type;
 	public String sortCode;
 	public String accountNumber;
@@ -54,21 +58,22 @@ public class Transaction {
 	public static final String GIVING = "giving";
 	public static final String BILLS = "bills";
 	public static final String SAVING = "saving";
-	public static final String CASH = "cash";
+	public static final String CASH = "general/cash";
 	public static final String CHEQUE = "cheque";
 	public static final String CREDITCARD = "creditcard";
 	public static final String DEPOSITS = "deposits";
-	public static final String PAYMENT = "other payment";
+	public static final String PAYMENT = "payment";
 	public static final String INCOME = "income";
 	public static final String TRANSPORT = "transport";
-	public static final String SUPERMARKET = "supermarket";
+	public static final String SUPERMARKET = "general/supermarket";
 	public static final String CLOTHES = "clothes";
 	public static final String MEALS = "meals";
 	public static final String HOLIDAYS = "holidays";
 	public static final String HOME = "home";
+	public static final String HOBBIES = "hobbies";
 	public static final String TREATS = "treats";
 	public static final String PAYPAL = "paypal";
-	public static final String HIGHSTREET = "highstreet";
+	public static final String HIGHSTREET = "general/highstreet";
 
 	public static final String TYPE_BGC = "BGC";
 	public static final String TYPE_DD = "DD";
@@ -84,7 +89,7 @@ public class Transaction {
 		"CHRISTIAN AID", "COMPASSION", "TEARFUND"
 	};
 	public static final String [] DESCRIPTION_DD_PAYMENT = new String[] {
-		"HMRC", "CO-OPERATIVE VISA"
+		"HMRC"
 	};
 	public static final String [] DESCRIPTION_DD_CREDITCARD = new String[] {
 		"CO-OPERATIVE VISA"
@@ -129,7 +134,7 @@ public class Transaction {
 	// meals
 	// highstreet
 	public static final String [] DESCRIPTION_DEB_HOME = new String[] {
-		"B& Q", "IKEA", "WHEATCROFT", "WICKES"
+		"B& Q", "IKEA", "WHEATCROFT", "WICKES", "HOMEBASE"
 	};
 	public static final String [] DESCRIPTION_DEB_HIGHSTREET = new String[] {
 		"ARGOS", "BOOTS", "BOW BANGLES", "CURRYS", "ENTERPRISE COSMETICS",
@@ -143,12 +148,16 @@ public class Transaction {
 	};
 	public static final String [] DESCRIPTION_DEB_HOLIDAYS = new String[] {
 		"CPAS VENTURES", "BILLING AQUADROME", "DOVER TOWN", "EARLY LEARNING", "HOSEASON ", "HOSPEDIA ",
-		"KINMEL HOTEL", "PETERBOROUGH PASS", "WHITBY INFORMATION", "WWW.POFERRIES.COM"
+		"KINMEL HOTEL", "PETERBOROUGH PASS", "WHITBY INFORMATION", "WWW.POFERRIES.COM",
+		"LAUNDE ABBEY"
 	};
 	public static final String [] DESCRIPTION_DEB_TREATS = new String[] {
 		"EDEN HALL DAY", "JAMES MELLORS AMUS", "LONDON AQUARIUM", "MANOR FARM", "N TRUST",
-		"NOTTINGHAM CASTLE", "RIVERSIDE FARM", "RUSHCLIFFE LEISURE", "SCUDAMORES", "THE FARMYARD",
-		"WICKSTEED PARK", "ATTENBOROUGH NATUR"
+		"NOTTINGHAM CASTLE", "RIVERSIDE FARM",  "SCUDAMORES", "THE FARMYARD",
+		"WICKSTEED PARK", "ATTENBOROUGH NATUR", "DENZ", "SAVOY CINEMAS",
+	};
+	public static final String [] DESCRIPTION_DEB_HOBBIES = new String[] {
+		"RUSHCLIFFE LEISURE", "BRAMCOTE LEISURE"
 	};
 	// CHRISTIAN BOOKSHOP
 	public boolean descriptionMatches(String[] ds) {
@@ -195,6 +204,8 @@ public class Transaction {
 			return HOME;
 		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_TREATS))
 			return TREATS;
+		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_HOBBIES))
+			return HOBBIES;
 		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_PAYPAL))
 			return PAYPAL;
 		if (TYPE_DEB.equals(type) && descriptionMatches(DESCRIPTION_DEB_HOLIDAYS))
@@ -207,6 +218,13 @@ public class Transaction {
 			return CASH;
 		if (TYPE_CHQ.equals(type) || TYPE_PAY.equals(type))
 			return CHEQUE;
+		System.out.println("Warning: unclassified transaction "+type+" "+description+" on "+day+"/"+month+"/"+year);
 		return PAYMENT;
+	}
+	public static class DateComparator implements Comparator<Transaction> {
+		@Override
+		public int compare(Transaction t0, Transaction t1) {
+			return t0.date.compareTo(t1.date);
+		}		
 	}
 }
